@@ -42,7 +42,7 @@ La API Interna para Sucursales es una API RESTful desarrollada en Flask que perm
 
 4. Ejecuta la aplicación:
     ```bash
-    python run.py
+    python main.py
     ```
 
 ## Documentación de Postman
