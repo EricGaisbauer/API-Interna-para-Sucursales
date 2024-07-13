@@ -2,4 +2,9 @@ Flask
 Flask-SQLAlchemy
 Flask-Marshmallow
 marshmallow-sqlalchemy
+<<<<<<< HEAD
 mysql-connector-python
+=======
+mysql-connector-python
+flask-cors
+>>>>>>> 373192e (Integracion api Registro)

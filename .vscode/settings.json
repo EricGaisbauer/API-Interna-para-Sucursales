@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./my-vite-app",
+        "./my-vite-app/src"
+    ]
+}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ferremás - Gestión de Despachos</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .jumbotron img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+        padding-bottom: 20px; /* Espacio debajo de la imagen */
+    }
+</style>
+</head>
+<!-- Barra de navegación -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">Ferremás</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="#">Inicio</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/productos">Productos</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/pedidos">Pedidos</a>
+      </li>
+      <li> 
+        <a class="nav-link" href="/register">Cuenta</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Sección principal -->
+<div class="container mt-5">
+  <div class="jumbotron">
+    <img src="/img/ferremas.jpg" alt="Descripcion de imagen">
+    <h1 class="display-4">Gestión de Despachos - Ferremás</h1>
+    <p class="lead">Administre sus despachos de productos fácilmente.</p>
+    <hr class="my-4">
+    <p>Agregue nuevos despachos y visualice los existentes.</p>
+  </div>
+  <!-- Formulario para agregar despachos -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Agregar Nuevo Despacho</h5>
+      <form id="taskForm">
+        <div class="form-group">
+          <label for="producto">Producto</label>
+          <input type="text" class="form-control" id="producto" required>
+        </div>
+        <div class="form-group">
+          <label for="proceso">Proceso</label>
+          <input type="text" class="form-control" id="proceso" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Agregar</button>
+      </form>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+    <h1>Tareas</h1>
+    <button id="loadTasksButton" class="btn btn-primary">Cargar Despachos</button>
+    <ul id="taskList"></ul>
+
+    <script>
+        document.getElementById('taskForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const producto = document.getElementById('producto').value;
+            const proceso = document.getElementById('proceso').value;
+
+            fetch('http://127.0.0.1:5000/task', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ producto: producto, proceso: proceso })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Tarea creada exitosamente') {
+                    alert('Tarea creada exitosamente');
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('loadTasksButton').addEventListener('click', function() {
+            fetch('http://127.0.0.1:5000/task')
+                .then(response => response.json())
+                .then(tasks => {
+                    const taskList = document.getElementById('taskList');
+                    taskList.innerHTML = '';
+                    tasks.forEach(task => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `Producto: ${task.producto}, Proceso: ${task.proceso}`;
+                        taskList.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

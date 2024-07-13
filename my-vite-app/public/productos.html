@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos - Ferremás</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Ferremás</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/productos">Productos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pedidos">Pedidos</a>
+                </li>
+                <li> 
+                    <a class="nav-link" href="/register">Cuenta</a>
+                  </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container mt-5">
+        <h1 class="display-4">Productos</h1>
+
+        <!-- Formulario para agregar/editar productos -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Agregar/Editar Producto</h5>
+                <form id="productoForm">
+                    <div class="form-group">
+                        <label for="codigo">Código</label>
+                        <input type="text" class="form-control" id="codigo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="marca">Marca</label>
+                        <input type="text" class="form-control" id="marca" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="precio">Precio</label>
+                        <input type="number" class="form-control" id="precio" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="stock">Stock</label>
+                        <input type="number" class="form-control" id="stock" required>
+                    </div>
+                    <input type="hidden" id="productoId">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lista de productos -->
+        <div id="productosList"></div>
+    </div>
+
+    <script>
+        // Función para obtener la lista de todos los productos
+        function fetchProductos() {
+            fetch('/api/productos')
+                .then(response => response.json())
+                .then(data => {
+                    const productosList = document.getElementById('productosList');
+                    productosList.innerHTML = '';
+                    data.forEach(producto => {
+                        const div = document.createElement('div');
+                        div.className = 'card mb-3';
+                        div.innerHTML = `
+                            <div class="card-body">
+                                <h5 class="card-title">${producto.nombre}</h5>
+                                <p class="card-text">Código: ${producto.codigo}</p>
+                                <p class="card-text">Marca: ${producto.marca}</p>
+                                <p class="card-text">Precio: ${producto.precio}</p>
+                                <p class="card-text">Stock: ${producto.stock}</p>
+                                <button class="btn btn-warning btn-edit" data-id="${producto.id}">Editar</button>
+                                <button class="btn btn-danger btn-delete" data-id="${producto.id}">Eliminar</button>
+                            </div>
+                        `;
+                        productosList.appendChild(div);
+                    });
+
+                    // Agregar eventos a los botones de editar y eliminar
+                    document.querySelectorAll('.btn-edit').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const id = this.getAttribute('data-id');
+                            fetch(`/api/productos/${id}`)
+                                .then(response => response.json())
+                                .then(producto => {
+                                    document.getElementById('codigo').value = producto.codigo;
+                                    document.getElementById('nombre').value = producto.nombre;
+                                    document.getElementById('marca').value = producto.marca;
+                                    document.getElementById('precio').value = producto.precio;
+                                    document.getElementById('stock').value = producto.stock;
+                                    document.getElementById('productoId').value = producto.id;
+                                })
+                                .catch(error => console.error('Error:', error));
+                        });
+                    });
+
+                    document.querySelectorAll('.btn-delete').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const id = this.getAttribute('data-id');
+                            fetch(`/api/productos/${id}`, {
+                                method: 'DELETE'
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    alert('Producto eliminado exitosamente');
+                                    fetchProductos();
+                                })
+                                .catch(error => console.error('Error:', error));
+                        });
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Evento para crear o actualizar un producto
+        document.getElementById('productoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('productoId').value;
+            const url = id ? `/api/productos/${id}` : '/api/productos';
+            const method = id ? 'PUT' : 'POST';
+
+            const producto = {
+                codigo: document.getElementById('codigo').value,
+                nombre: document.getElementById('nombre').value,
+                marca: document.getElementById('marca').value,
+                precio: document.getElementById('precio').value,
+                stock: document.getElementById('stock').value
+            };
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(producto)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Producto guardado exitosamente');
+                    document.getElementById('productoForm').reset();
+                    fetchProductos();
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        // Inicializar la lista de productos al cargar la página
+        fetchProductos();
+    </script>
+</body>
+</html>
